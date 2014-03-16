@@ -1,7 +1,7 @@
 TangerineFbApp::Application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
-  config.assets.precompile = ['*.js', '*.css']
+  config.assets.precompile = ['*.js', '*.css','*.jpeg','*.png','*.gif','*.jpg']
   # Code is not reloaded between requests.
   config.cache_classes = true
 
