@@ -1,0 +1,555 @@
+<div class="page">
+	<div class="app-area">
+		<div class="banner">
+			<div class="banner_back">
+				<%= image_tag("bannerBack.png", alt: "Banner", id: "bannerBack") %>
+			</div>
+			<div class="banner_text">
+				<font size="6em">
+					<font color="red">H</font>
+					<font color="blue">A</font>
+					<font color="green">P</font>
+					<font color="orange">P</font>
+					<font color="purple">Y</font>&nbsp;&nbsp;
+					<font color="brown">H</font>
+					<font color="pink">O</font>
+					<font color="violet">L</font>
+					<font color="green">I</font>
+					<font color="magenta">!</font>
+				</font>
+				<font size="4em" color="orange">&nbsp;&nbsp;COLOR YOUR FRIENDS THE VIRTUAL WAY</font>
+			</div>
+		</div>
+		<div class="image_back" style="position: relative; left: 0; top: 0;" id="image_back">
+			<%= image_tag("imageBack.jpg", alt: "Image", id: "imageBack", style: "position: relative; top: 0; left: 0;") %>
+			<% if @u %>
+				<%= image_tag @u.image_url, style: "position: absolute; top: 51px; left: 208px;", class: "rotateX"%>
+			<% end %>
+			<input type="text" id="msg-box" value=" Type Your Message Here!" class="text-rotateX" style="position: absolute; top: 67%; left: 27%; height:22px; width:26%; color: #FF0000;">
+		</div>
+		<div class="step_block_1">
+			<div class="step_1">
+				<div class="step_1_text">
+					STEP 1 - UPLOAD A PIC
+				</div>
+				<div class="upload_methods">
+					<div class="upload-method" id="fb-upload" style="cursor: pointer;">
+						<%= image_tag("fbUpload.png") %>
+						<div class="upload-method-text"> Upload From Facebook! </div>
+					</div>
+					<div class="upload-method" id="device-upload" style="cursor: pointer;">
+						<%= form_tag({action: :index}, multipart: true, id:"form-img-upload") do %>
+							<div class="image-upload" style="cursor: pointer;">
+							    <label for="file-input" style="cursor: pointer;">
+									<%= image_tag("deviceUpload.png") %>
+							    </label>
+							    	<%= file_field_tag 'file-input' %>
+							</div>
+						<% end %>
+							<div class="upload-method-text"> Upload From Device!</div>
+					</div>
+					<div class="upload-method" id="cam-upload" style="cursor: pointer;">
+						<%= image_tag("camUpload.png") %>
+						<div class="upload-method-text"> Upload From Webcam!</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="step_block_2">
+			<div class="step_3">
+				<div class="step_3_text">
+						STEP 2 - ADD SPLASH
+				</div>
+				<div class="splash_options">
+					<div class="splash-image" id="splash1" style="cursor: pointer;">
+						<%= image_tag("splash1.png", alt: "Splash 1", id:"splash1") %>
+					</div>
+					<div class="splash-image" id="splash2" style="cursor: pointer;">
+						<%= image_tag("splash2.png", alt: "Splash 2", id:"splash2") %>
+					</div>
+					<div class="splash-image" id="splash3" style="cursor: pointer;">
+						<%= image_tag("splash3.png", alt: "Splash 3", id:"splash3") %>
+					</div>
+					<div class="splash-image" id="splash4" style="cursor: pointer;">
+						<%= image_tag("splash4.png", alt: "Splash 4", id:"splash4") %>
+					</div>
+					<div class="splash-image" id="splash5" style="cursor: pointer;">
+						<%= image_tag("splash5.png", alt: "Splash 5", id:"splash5") %>
+					</div>
+					<div class="splash-image" id="splash6" style="cursor: pointer;">
+						<%= image_tag("splash6.png", alt: "Splash 6", id:"splash6") %>
+					</div>
+					<div class="splash-image" id="splash7" style="cursor: pointer;">
+						<%= image_tag("splash7.png", alt: "Splash 7", id:"splash7") %>
+					</div>
+				</div>
+			</div>
+			<div class="step_4">
+				<%= link_to "OK, I'M DONE!", {controller: "app_main", action: "actionPage"} , :id => "next-page" %>
+			</div>
+		</div>
+	</div>
+	<div class="fb-picture-area">
+	
+		<font color="white" size="5em"><div class="photo-get-status">TAP ON IMAGE TO SELECT!</div></font>
+		<br/>
+		<div class="fb-pictures" id="fb-pictures">
+		</div>
+
+	</div>
+	<div class="webcam-area">
+		<div class="webcam-element" id="webcam"></div>
+		<div class="webcam-element" id="captured-image">
+			<canvas id="canvas" height="240" width="320" style="border: solid gray 1px;"></canvas>
+		</div>
+		<div id="webcam-buttons">
+		<br/>
+			<button id="click-btn" onclick="javascript:webcam.capture();changeFilter();void(0);">&nbsp;&nbsp;CLICK&nbsp;&nbsp;</button>
+			<button id="use-image">&nbsp;&nbsp;USE THIS&nbsp;&nbsp;</button>
+		</div>
+	</div>
+</div>
+<!-- <button id="dummy-login-btn">LOGIN</button> -->
+<script>
+var photoArr = [];
+var didGetFBPhotos = false;
+$(document).ready(function(){
+
+
+	$(".webcam-area").hide();
+	$(".fb-picture-area").hide();
+	// $("#click-btn").hide();
+
+	$("#msg-box").click(function(){
+		$(this).val('');
+	});
+
+	$("#msg-box").blur(function(){
+		if($(this).val() == ""){
+			$(this).val('Type Your Message Here!');
+		}
+	});
+
+	$('.fb-pictures').on("click", ".fb-picture-option", function() {
+		chosenPicPos = $(this).attr("id").split("-")[3];
+		chosenImgLink = photoArr[chosenPicPos]["source"];
+		$(".rotateX").remove();
+		$('<img src="'+chosenImgLink+'" style="position: absolute; top: 51px; left: 208px;" class="rotateX"/>').insertAfter("#imageBack");
+		$(".fb-picture-area").hide();  
+		$(".added_splash").remove(); 
+		$("#image_back").html2canvas({
+		logging: true,
+		allowTaint: false,
+		taintTest: true,
+		useCORS: true,
+	    onrendered : function(canvas) {
+	    var img = canvas.toDataURL();
+	    localStorage["avatar"] = img;
+	        }
+	    });
+	});
+
+
+	$("#use-image").click(function(){
+		var canvas = document.getElementById('canvas');
+		var img = canvas.toDataURL("image/png");
+		$(".rotateX").remove();
+		$('<img src="'+img+'" style="position: absolute; top: 51px; left: 208px;" class="rotateX"/>').insertAfter("#imageBack");   
+		$(".webcam-area").hide();  
+		$(".added_splash").remove(); 
+		$("#image_back").html2canvas({
+		logging: true,
+		allowTaint: false,
+		taintTest: true,
+		useCORS: true,
+	    onrendered : function(canvas) {
+	    var img = canvas.toDataURL();
+	    localStorage["avatar"] = img;
+	        }
+	    });
+	});	
+
+	$("#cam-upload").click(function(){
+		$(".webcam-area").show();   
+	});
+
+	$(".webcam-area").click(function(e){
+		if ($(e.target).is('#webcam-buttons, #webcam-buttons *')) {
+            return;
+        }
+        $(".webcam-area").hide();
+	});
+
+	$(".fb-picture-area").click(function(e){
+		if ($(e.target).is('.fb-picture-option, .fb-picture-option *')) {
+            return;
+        }
+		$(".fb-picture-area").hide();   
+	});
+
+	$("#fb-upload").click(function(){
+		$(".photo-get-status").html("Fetching photos &nbsp; <img src='/assets/fb-post-loader.gif' style='height:10px; width:20px; margin-top:240px;'/>");
+		$(".fb-picture-area").show();
+		 FB.login(function(response) {
+      	if (response.session) {
+        //user is logged in, reload page
+        if(!didGetFBPhotos){ getAlbumData(); }
+
+      } else {
+        // user is not logged in
+        if(!didGetFBPhotos){ getAlbumData(); }
+      }
+  	}, {scope:'read_stream, publish_stream, offline_access, user_photos, email'});
+	});
+
+	function getAlbumData(){
+		FB.api('/me/photos?fields=source&limit=20', function(response) {
+			if(response && !response.error){
+			$(".photo-get-status").html('Tap to select');
+      	 photoArr = response["data"];
+      	 var count=0;
+      	 didGetFBPhotos = true;
+      	 if(photoArr.length>0){
+      	 for(var i=0; i<photoArr.length-1 && count<20; i++){
+      	 	var imgLink = photoArr[i]["source"];
+      	 	count++;
+      	 	$(".fb-picture-area #fb-pictures").append('<img src="'+imgLink+'" style="height:135px; width:24%; margin:0.2%" class="fb-picture-option" id="fb-picture-option-'+i+'"/>');
+      	 }
+      	}
+      	else{
+      		$(".photo-get-status").html("<div style='display:block; margin-top:240px;'>Did not find any tagged photos!</span>");
+      	}
+      	}
+      	else{
+      		$(".photo-get-status").html("Can't access your photos try again!");
+
+      	}
+   	 });
+	}
+
+	// FB Login - NOT USING CURRENTLY
+
+	/**
+	$("#dummy-login-btn").click(function(){
+		 FB.login(function(response) {
+      if (response.session) {
+        //user is logged in, reload page
+        window.location.reload(true);
+      } else {
+        // user is not logged in
+      }
+  }, {scope:'read_stream, publish_stream, offline_access, user_photos, email'});
+	});
+	**/
+	
+});
+
+var pos = 0;
+var ctx = null;
+var cam = null;
+var image = null;
+var camDataURL;
+
+var filter_on = false;
+var filter_id = 0;
+
+function changeFilter() {
+	if (filter_on) {
+		filter_id = (filter_id + 1) & 7;
+	}
+}
+
+function toggleFilter(obj) {
+	if (filter_on =!filter_on) {
+		obj.parentNode.style.borderColor = "#c00";
+	} else {
+		obj.parentNode.style.borderColor = "#333";
+	}
+}
+	jQuery("#webcam").webcam({
+
+	width: 320,
+	height: 240,
+	mode: "callback",
+	swffile: "/assets/jscam_canvas_only.swf",
+
+	onTick: function(remain) {
+
+		if (0 == remain) {
+			jQuery("#status").text("Cheese!");
+		} else {
+			jQuery("#status").text(remain + " seconds remaining...");
+		}
+	},
+
+	onSave: function(data) {
+
+		var col = data.split(";");
+		var img = image;
+
+		if (false == filter_on) {
+
+			for(var i = 0; i < 320; i++) {
+				var tmp = parseInt(col[i]);
+				img.data[pos + 0] = (tmp >> 16) & 0xff;
+				img.data[pos + 1] = (tmp >> 8) & 0xff;
+				img.data[pos + 2] = tmp & 0xff;
+				img.data[pos + 3] = 0xff;
+				pos+= 4;
+			}
+
+		} else {
+
+			var id = filter_id;
+			var r,g,b;
+			var r1 = Math.floor(Math.random() * 255);
+			var r2 = Math.floor(Math.random() * 255);
+			var r3 = Math.floor(Math.random() * 255);
+
+			for(var i = 0; i < 320; i++) {
+				var tmp = parseInt(col[i]);
+
+				/* Copied some xcolor methods here to be faster than calling all methods inside of xcolor and to not serve complete library with every req */
+
+				if (id == 0) {
+					r = (tmp >> 16) & 0xff;
+					g = 0xff;
+					b = 0xff;
+				} else if (id == 1) {
+					r = 0xff;
+					g = (tmp >> 8) & 0xff;
+					b = 0xff;
+				} else if (id == 2) {
+					r = 0xff;
+					g = 0xff;
+					b = tmp & 0xff;
+				} else if (id == 3) {
+					r = 0xff ^ ((tmp >> 16) & 0xff);
+					g = 0xff ^ ((tmp >> 8) & 0xff);
+					b = 0xff ^ (tmp & 0xff);
+				} else if (id == 4) {
+
+					r = (tmp >> 16) & 0xff;
+					g = (tmp >> 8) & 0xff;
+					b = tmp & 0xff;
+					var v = Math.min(Math.floor(.35 + 13 * (r + g + b) / 60), 255);
+					r = v;
+					g = v;
+					b = v;
+				} else if (id == 5) {
+					r = (tmp >> 16) & 0xff;
+					g = (tmp >> 8) & 0xff;
+					b = tmp & 0xff;
+					if ((r+= 32) < 0) r = 0;
+					if ((g+= 32) < 0) g = 0;
+					if ((b+= 32) < 0) b = 0;
+				} else if (id == 6) {
+					r = (tmp >> 16) & 0xff;
+					g = (tmp >> 8) & 0xff;
+					b = tmp & 0xff;
+					if ((r-= 32) < 0) r = 0;
+					if ((g-= 32) < 0) g = 0;
+					if ((b-= 32) < 0) b = 0;
+				} else if (id == 7) {
+					r = (tmp >> 16) & 0xff;
+					g = (tmp >> 8) & 0xff;
+					b = tmp & 0xff;
+					r = Math.floor(r / 255 * r1);
+					g = Math.floor(g / 255 * r2);
+					b = Math.floor(b / 255 * r3);
+				}
+
+				img.data[pos + 0] = r;
+				img.data[pos + 1] = g;
+				img.data[pos + 2] = b;
+				img.data[pos + 3] = 0xff;
+				pos+= 4;
+			}
+		}
+
+		if (pos >= 0x4B000) {
+			ctx.putImageData(img, 0, 0);
+			pos = 0;
+		}
+	},
+
+	onCapture: function () {
+		jQuery("#flash").css("display", "block");
+		jQuery("#flash").fadeOut(100, function () {
+			jQuery("#flash").css("opacity", 1);
+		});
+		webcam.save();
+
+	},
+
+	debug: function (type, string) {
+		jQuery("#status").html(type + ": " + string);
+	},
+
+	onLoad: function () {
+		// $("#click-btn").show();
+		var cams = webcam.getCameraList();
+		for(var i in cams) {
+			jQuery("#cams").append("<li>" + cams[i] + "</li>");
+		}
+	}
+});
+
+function getPageSize() {
+
+	var xScroll, yScroll;
+
+	if (window.innerHeight && window.scrollMaxY) {
+		xScroll = window.innerWidth + window.scrollMaxX;
+		yScroll = window.innerHeight + window.scrollMaxY;
+	} else if (document.body.scrollHeight > document.body.offsetHeight){ // all but Explorer Mac
+		xScroll = document.body.scrollWidth;
+		yScroll = document.body.scrollHeight;
+	} else { // Explorer Mac...would also work in Explorer 6 Strict, Mozilla and Safari
+		xScroll = document.body.offsetWidth;
+		yScroll = document.body.offsetHeight;
+	}
+
+	var windowWidth, windowHeight;
+
+	if (self.innerHeight) { // all except Explorer
+		if(document.documentElement.clientWidth){
+			windowWidth = document.documentElement.clientWidth;
+		} else {
+			windowWidth = self.innerWidth;
+		}
+		windowHeight = self.innerHeight;
+	} else if (document.documentElement && document.documentElement.clientHeight) { // Explorer 6 Strict Mode
+		windowWidth = document.documentElement.clientWidth;
+		windowHeight = document.documentElement.clientHeight;
+	} else if (document.body) { // other Explorers
+		windowWidth = document.body.clientWidth;
+		windowHeight = document.body.clientHeight;
+	}
+
+	// for small pages with total height less then height of the viewport
+	if(yScroll < windowHeight){
+		pageHeight = windowHeight;
+	} else {
+		pageHeight = yScroll;
+	}
+
+	// for small pages with total width less then width of the viewport
+	if(xScroll < windowWidth){
+		pageWidth = xScroll;
+	} else {
+		pageWidth = windowWidth;
+	}
+
+	return [pageWidth, pageHeight];
+}
+
+window.addEventListener("load", function() {
+
+	jQuery(".webcam-area").append("<div id=\"flash\"></div>");
+
+	var canvas = document.getElementById("canvas");
+
+	if (canvas.getContext) {
+		ctx = document.getElementById("canvas").getContext("2d");
+		ctx.clearRect(0, 0, 320, 240);
+
+		var img = new Image();
+		// img.src = "/image/logo.gif";
+		img.onload = function() {
+			ctx.drawImage(img, 129, 89);
+		}
+		image = ctx.getImageData(0, 0, 320, 240);
+	}
+	
+	var pageSize = getPageSize();
+	jQuery("#flash").css({ height: pageSize[1] + "px" });
+
+}, false);
+
+window.addEventListener("resize", function() {
+
+	var pageSize = getPageSize();
+	jQuery("#flash").css({ height: pageSize[1] + "px" });
+
+}, false);
+</script>
+<script type="text/javascript">
+
+var splash_positions = []
+var p1 = []
+var p2 = []
+var p3 = []
+var p4 = []
+var p5 = []
+var p6 = []
+
+function randomIntFromInterval(min,max){
+	return Math.floor(Math.random()*(max-min+1)+min);
+}
+
+$(document).ready(function(){
+
+	var splash_positions = [[40,320],[90,360],[50,160],[140,130],[90,190],[180,390],[180,160],[230,160],[230,360]]; //9-random positions
+
+	$("input[type=file]").change(function(){
+			$("#form-img-upload").submit();
+	});
+
+	$(".splash-image").click(function(){
+		var imgName = $(this).attr("id")
+		var randomSelectPos = randomIntFromInterval(0,8)
+		$("#image_back").append("<img src='/assets/"+imgName+".png' alt='Splash 7', id='splash7', class='added_splash', style='position: absolute; top: "+splash_positions[randomSelectPos][0]+"px; left: "+splash_positions[randomSelectPos][1]+"px; height: 80px;, width:80px;' />");
+
+		$("#image_back").html2canvas({
+			logging: true,
+			allowTaint: false,
+			taintTest: true,
+			useCORS: true,
+		    onrendered : function(canvas) {
+		    var img = canvas.toDataURL();
+		    localStorage["avatar"] = img;
+		        }
+		    });
+		});
+
+	// $("#text-rotateX").blur(function(){
+	// 	$("#image_back").html2canvas({
+	// 	logging: true,
+	// 	allowTaint: false,
+	// 	taintTest: true,
+	// 	useCORS: true,
+	//     onrendered : function(canvas) {
+	//     var img = canvas.toDataURL();
+	//     localStorage["avatar"] = img;
+	//         }
+	//     });
+	// })
+
+	$("#next-page").click(function(){
+		$("#image_back").html2canvas({
+		logging: true,
+		allowTaint: false,
+		taintTest: true,
+		useCORS: true,
+	    onrendered : function(canvas) {
+	    var img = canvas.toDataURL();
+	    localStorage["avatar"] = img;
+	        }
+	    });
+	});
+});
+</script>
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-49009524-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
